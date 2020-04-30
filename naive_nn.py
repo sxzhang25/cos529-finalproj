@@ -26,7 +26,9 @@ class Naive_NN:
     return self.y.copy()
 
   def plot(self):
-
+    '''
+    plot 2d projection of nearest neighbors
+    '''
     def man_cmap(cmap, value=1.0):
       colors = cmap(np.arange(cmap.N))
       hls = np.array([colorsys.rgb_to_hls(*c) for c in colors[:,:3]])
@@ -45,10 +47,10 @@ class Naive_NN:
     fig = plt.figure()
     ax = fig.add_subplot(111)
     test = ax.scatter(self.data[:,0],
-                              self.data[:,1],
-                              s=1,
-                              c=self.y,
-                              cmap=man_cmap(cmap, 1.25))
+                      self.data[:,1],
+                      s=1,
+                      c=self.y,
+                      cmap=man_cmap(cmap, 1.25))
 
     anchors = ax.scatter(self.anchors[:,0],
                          self.anchors[:,1],
