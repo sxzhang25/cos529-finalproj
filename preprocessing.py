@@ -38,7 +38,7 @@ def load_imgs(path, n=0):
         X.append(np.stack(char_imgs))
       except ValueError as e:  # edge case: last one
         print(e)
-        print("Error - char_imgs:", char_imgs)
+        print("ERROR: char_imgs\n", char_imgs)
 
       alphabet_dict[alphabet][1] = curr_y
       curr_y += 1
