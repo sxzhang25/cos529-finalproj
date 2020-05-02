@@ -7,8 +7,8 @@ def create_oneshot_task(X, labels, alphabet_dict, N=1, language=None):
   n_classes, n_examples, w, h = X.shape
 
   indices = np.random.randint(0, n_examples, size=(N,))
-  low, high = alphabet_dict[language]
   if language is not None:  # select characters from specified language
+    low, high = alphabet_dict[language]
     if N < high - low:
       raise ValueError("ERROR: this language ({}) has less than {} letters".format(language, N))
     categories = np.random.choice(range(low, high), size=(N,), replace=False)
