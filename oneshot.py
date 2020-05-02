@@ -1,6 +1,6 @@
 import numpy as np
 
-def create_oneshot_task(data, labels, alphabet_dict, N=1, language=None):
+def create_oneshot_task(X, labels, alphabet_dict, N=1, language=None):
   '''
   create pairs of test images, support set for testing N-way one-shot learning
   '''
