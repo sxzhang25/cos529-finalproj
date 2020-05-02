@@ -28,7 +28,7 @@ def create_oneshot_task(data, labels, alphabet_dict, N=1, language=None):
 
   return pairs, targets
 
-def test_oneshot(model, N, k, data, labels, alphabet_dict, language, verbose=0):
+def test_oneshot(model, N, k, data, labels, alphabet_dict, language=None, verbose=0):
   '''
   Test average N-way oneshot learning accuracy of model over k one-shot tasks
   '''
@@ -37,7 +37,7 @@ def test_oneshot(model, N, k, data, labels, alphabet_dict, language, verbose=0):
     print("Evaluating model on {} random {}-way one-shot learning tasks...".format(k,N))
 
   for i in range(k):
-    inputs, targets = make_oneshot_task(data, labels, alphabet_dict, N=N, language=language)
+    inputs, targets = create_oneshot_task(data, labels, alphabet_dict, N=N, language=language)
     probs = model.predict(inputs)
     if np.argmax(probs) == np.argmax(targets):
       correct += 1
