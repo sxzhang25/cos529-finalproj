@@ -26,17 +26,7 @@ pretrained = True
 
 
 for test in tests:
-  if test == 'basic':
-    anchors = np.array([[1,1], [1,-1], [-1,1], [-1,-1]])
-    labels = np.array([0, 0, 1, 2], dtype='int')
-    data = 2 * np.random.rand(500, 2) - 1
-
-    naive_nn = nnn.Naive_NN(anchors, labels)
-    y_ = naive_nn.classify(data)
-
-    naive_nn.plot()
-
-  elif test == 'naive_nn':
+  if test == 'naive_nn':
     for i in range(2, 11):
       nnn.test_oneshot(i, 500, X_test, y_test, alphabet_dict_test, language=None, verbose=1)
 
