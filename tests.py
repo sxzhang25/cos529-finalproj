@@ -21,7 +21,7 @@ n_classes, n_examples, w, h = X.shape
 X_test, y_test, alphabet_dict_test, _ = load_imgs('./data/omniglot/images_evaluation')
 
 # tests
-tests = ['naive_nn']
+tests = ['naive_nn', 'twin_nn']
 pretrained = True
 
 
@@ -38,7 +38,7 @@ for test in tests:
 
   elif test == 'naive_nn':
     for i in range(2, 11):
-      nnn.test_oneshot(i, 10, X_test, y_test, alphabet_dict_test, language=None, verbose=1)
+      nnn.test_oneshot(i, 500, X_test, y_test, alphabet_dict_test, language=None, verbose=1)
 
   elif test == 'twin_nn':
     if not pretrained:
