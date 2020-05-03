@@ -13,9 +13,17 @@ from oneshot import *
 
 np.random.seed(0) # set seed
 
+# load train data
+X, y, alphabet_dict, char_dict = load_imgs('./data/omniglot/images_background')
+n_classes, n_examples, w, h = X.shape
+
+# load test data
+X_test, y_test, alphabet_dict_test, _ = load_imgs('./data/omniglot/images_evaluation')
+
 # tests
-tests = ['omniglot']
+tests = ['twin_nn']
 pretrained = True
+
 
 for test in tests:
   if test == 'basic':
@@ -28,7 +36,7 @@ for test in tests:
 
     naive_nn.plot()
 
-  elif test == 'mnist':
+  elif test == 'naive_nn':
     mndata = MNIST('data/mnist')
     scaler = StandardScaler()
     cpc = 2  # centers per class
@@ -64,10 +72,7 @@ for test in tests:
 
     print('\nAccuracy: %2.2f %%' % (100 * len(np.where(y_==test_labels)[0]) / len(y_)))
 
-  elif test == 'omniglot':
-    X, y, alphabet_dict, char_dict = load_imgs('./data/omniglot/images_background')
-    n_classes, n_examples, w, h = X.shape
-    
+  elif test == 'twin_nn':
     if not pretrained:
       twin_nn = tnn.create_model((w,h,1))
       twin_nn.compile(loss='binary_crossentropy',
@@ -83,7 +88,6 @@ for test in tests:
       twin_nn.save('models/twin_nn')
     else:
       twin_nn = keras.models.load_model('models/twin_nn')
-      X_test, y_test, alphabet_dict_test, _ = load_imgs('./data/omniglot/images_evaluation')
-      
+
       for i in range(1, 11):
-        test_oneshot(twin_nn, i, 500, X_test, y_test, alphabet_dict_test, language=None, verbose=1)
+        tnn.test_oneshot(twin_nn, i, 500, X_test, y_test, alphabet_dict_test, language=None, verbose=1)
