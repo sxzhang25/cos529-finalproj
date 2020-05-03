@@ -17,13 +17,15 @@ def create_oneshot_task(X, labels, alphabet_dict, N=1, language=None):
 
   true_category = categories[0]
   ex1, ex2 = np.random.choice(n_examples, replace=False, size=(2,))
-  test_img = np.asarray([X[true_category, ex1,:,:]] * N).reshape(N,w,h,1)
+  test_img = np.asarray([X[true_category, ex1,:,:]] * N)
+  test_img = np.expand_dims(test_img, axis=3)
 
   targets = np.zeros((N,))
   targets[0] = 1  # first support image is from the same class
 
-  support_imgs = X[caetgories, indices,:,:]
-  support_imgs[0,:,:,:] = X[true_category, ex2]  # set same class comparison image
+  support_imgs = X[categories, indices,:,:]
+  support_imgs[0,:,:] = X[true_category, ex2]  # set same class comparison image
+  support_imgs = np.expand_dims(support_imgs, axis=3)
   pairs = [test_img, support_imgs]
 
   return pairs, targets
@@ -42,8 +44,8 @@ def test_oneshot(model, N, k, data, labels, alphabet_dict, language=None, verbos
     if np.argmax(probs) == np.argmax(targets):
       correct += 1
 
-    accuracy = (100 * correct / k)
-    if verbose:
-      print("Average %d-way one-shot accuracy: %4.2f%%" % (accuracy, N))
+  accuracy = (100 * correct / k)
+  if verbose:
+    print("Average %d-way one-shot accuracy: %4.2f%%" % (accuracy, N))
 
-    return accuracy
+  return accuracy
