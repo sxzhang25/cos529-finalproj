@@ -46,6 +46,6 @@ def test_oneshot(model, N, k, data, labels, alphabet_dict, language=None, verbos
 
   accuracy = (100 * correct / k)
   if verbose:
-    print("Average %d-way one-shot accuracy: %4.2f%%" % (accuracy, N))
+    print("Average %d-way one-shot accuracy: %4.2f%%" % (N, accuracy))
 
   return accuracy
