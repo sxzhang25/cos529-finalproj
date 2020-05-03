@@ -5,6 +5,8 @@ from keras.layers import Input, Conv2D, MaxPooling2D, Flatten, Dense, Lambda
 from keras.regularizers import l2
 from keras import backend as K
 
+from oneshot import *
+
 def get_batch(batch_size, X):
   '''
   create a batch of n pairs, half from the same class and half from different
@@ -85,36 +87,6 @@ def create_model(input_shape):
   twin_nn = Model(inputs=[left_input, right_input], outputs=prediction)
 
   return twin_nn
-
-def create_oneshot_task(X, labels, alphabet_dict, N=1, language=None):
-  '''
-  create pairs of test images, support set for testing N-way one-shot learning
-  '''
-  n_classes, n_examples, w, h = X.shape
-
-  indices = np.random.randint(0, n_examples, size=(N,))
-  if language is not None:  # select characters from specified language
-    low, high = alphabet_dict[language]
-    if N < high - low:
-      raise ValueError("ERROR: this language ({}) has less than {} letters".format(language, N))
-    categories = np.random.choice(range(low, high), size=(N,), replace=False)
-  else:
-    categories = np.random.choice(n_classes, size=(N,), replace=False)
-
-  true_category = categories[0]
-  ex1, ex2 = np.random.choice(n_examples, replace=False, size=(2,))
-  test_img = np.asarray([X[true_category, ex1,:,:]] * N)
-  test_img = np.expand_dims(test_img, axis=3)
-
-  targets = np.zeros((N,))
-  targets[0] = 1  # first support image is from the same class
-
-  support_imgs = X[categories, indices,:,:]
-  support_imgs[0,:,:] = X[true_category, ex2]  # set same class comparison image
-  support_imgs = np.expand_dims(support_imgs, axis=3)
-  pairs = [test_img, support_imgs]
-
-  return pairs, targets
 
 def test_oneshot(model, N, k, data, labels, alphabet_dict, language=None, verbose=0):
   '''
