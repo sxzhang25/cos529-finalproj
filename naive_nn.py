@@ -3,63 +3,35 @@ import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 import colorsys
 
-class Naive_NN:
-  def __init__(self, anchors, labels):
-    self.anchors = anchors # data points
-    self.labels = labels # labels
+from oneshot import *
 
-  def classify(self, data):
-    '''
-    given labeled anchor examples, classify each data point using nearest neighbors
-    '''
-    self.data = data
+def predict(data):
+  '''
+  given labeled anchor examples, classify each data point using nearest neighbors
+  '''
+  distances = np.zeros(data[0].shape[0])
+  for i in range(distances.shape[0]):
+    distances[i] = np.linalg.norm(data[0][i] - data[1][i])
+  y = np.argmin(distances)
 
-    self.y = np.zeros(data.shape[0], dtype='int')
-    for i,x in enumerate(data):
-      min_dist = np.inf
-      for j,a in enumerate(self.anchors):
-        dist = np.linalg.norm(x - a)
-        if dist < min_dist:
-          self.y[i] = self.labels[j]
-          min_dist = dist
+  return y
 
-    return self.y.copy()
+def test_oneshot(N, k, data, labels, alphabet_dict, language=None, verbose=0):
+  '''
+  Test average N-way oneshot learning accuracy of model over k one-shot tasks
+  '''
+  correct = 0
+  if verbose:
+    print("Evaluating model on {} random {}-way one-shot learning tasks...".format(k,N))
 
-  def plot(self):
-    '''
-    plot 2d projection of nearest neighbors
-    '''
-    def man_cmap(cmap, value=1.0):
-      colors = cmap(np.arange(cmap.N))
-      hls = np.array([colorsys.rgb_to_hls(*c) for c in colors[:,:3]])
-      hls[:,1] *= value
-      rgb = np.clip(np.array([colorsys.hls_to_rgb(*c) for c in hls]), 0,1)
-      return mcolors.LinearSegmentedColormap.from_list("", rgb)
+  for i in range(k):
+    inputs, targets = create_oneshot_task(data, labels, alphabet_dict, N=N, language=language)
+    y = predict(inputs)
+    if y == np.argmax(targets):
+      correct += 1
 
-    N = len(self.labels) # number of labels
+  accuracy = (100 * correct / k)
+  if verbose:
+    print("Average %d-way one-shot accuracy: %4.2f%%" % (N, accuracy))
 
-    # define colormap
-    cmap = plt.cm.jet
-    cmaplist = [cmap(i) for i in range(cmap.N)]
-    cmap = cmap.from_list('Custom cmap', cmaplist, cmap.N)
-
-    # plot data
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    test = ax.scatter(self.data[:,0],
-                      self.data[:,1],
-                      s=1,
-                      c=self.y,
-                      cmap=man_cmap(cmap, 1.25))
-
-    anchors = ax.scatter(self.anchors[:,0],
-                         self.anchors[:,1],
-                         s=20,
-                         c=self.labels,
-                         cmap=man_cmap(cmap, 0.75))
-
-    legend = ax.legend(*test.legend_elements(), title="Classes", prop={'size': 5})
-    ax.add_artist(legend)
-    plt.title('Nearest Neighbors Classifier')
-
-    plt.show()
+  return accuracy
