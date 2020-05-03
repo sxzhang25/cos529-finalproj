@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+import keras
 
 from mnist import MNIST
 
@@ -14,6 +15,7 @@ np.random.seed(0) # set seed
 
 # tests
 tests = ['omniglot']
+pretrained = True
 
 for test in tests:
   if test == 'basic':
@@ -65,15 +67,23 @@ for test in tests:
   elif test == 'omniglot':
     X, y, alphabet_dict, char_dict = load_imgs('./data/omniglot/images_background')
     n_classes, n_examples, w, h = X.shape
+    
+    if not pretrained:
+      twin_nn = tnn.create_model((w,h,1))
+      twin_nn.compile(loss='binary_crossentropy',
+                      optimizer='adam',
+                      metrics=['binary_accuracy'])
 
-    twin_nn = tnn.create_model((w,h,1))
-    twin_nn.compile(loss='binary_crossentropy',
-                    optimizer='adam',
-                    metrics=['binary_accuracy'])
+      twin_nn.summary()
 
-    twin_nn.summary()
-
-    batch_size = 32
-    history = twin_nn.fit_generator(generator=tnn.training_generator(X, batch_size=batch_size),
-                                  steps_per_epoch=(X.shape[0] * X.shape[1] / batch_size),
-                                  epochs=10)
+      batch_size = 32
+      history = twin_nn.fit_generator(generator=tnn.training_generator(X, batch_size=batch_size),
+                                      steps_per_epoch=(X.shape[0] * X.shape[1] / batch_size),
+                                      epochs=30)
+      twin_nn.save('models/twin_nn')
+    else:
+      twin_nn = keras.models.load_model('models/twin_nn')
+      X_test, y_test, alphabet_dict_test, _ = load_imgs('./data/omniglot/images_evaluation')
+      
+      for i in range(1, 11):
+        test_oneshot(twin_nn, i, 500, X_test, y_test, alphabet_dict_test, language=None, verbose=1)
