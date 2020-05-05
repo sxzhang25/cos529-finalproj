@@ -51,7 +51,6 @@ def load_imgs(path, n=0):
 
 def preprocess_data(X):
   X = np.reshape(X, (X.shape[0], X.shape[1], -1))
-  print(X.shape)
   X = np.reshape(X, (-1, X.shape[2]))
 
   return X
