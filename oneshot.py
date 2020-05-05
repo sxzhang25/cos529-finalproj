@@ -1,9 +1,10 @@
 import numpy as np
 
-def create_oneshot_task(X, labels, alphabet_dict, N=1, language=None):
+def create_oneshot_task(X, labels, alphabet_dict, N=1, seed=2, language=None):
   '''
   create pairs of test images, support set for testing N-way one-shot learning
   '''
+  np.random.seed(seed)
   n_classes, n_examples, w, h = X.shape
 
   indices = np.random.randint(0, n_examples, size=(N,))
