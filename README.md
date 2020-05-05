@@ -6,7 +6,7 @@ TODO:
 
 (X) Create and test twin neural network
 
-( ) Create and test DBM model
+(X) Create and test DBM model
 
 ( ) Write organized testing code to compare model performances
 
