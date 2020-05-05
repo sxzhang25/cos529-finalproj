@@ -2,6 +2,8 @@ import numpy as np
 import os
 import cv2
 
+from sklearn.decomposition import PCA
+
 def load_imgs(path, n=0):
   '''
   load images from path
@@ -46,3 +48,13 @@ def load_imgs(path, n=0):
   y = np.vstack(y)
   X = np.stack(X)
   return X, y, alphabet_dict, char_dict
+
+def preprocess_data_dbm(X):
+  X = np.reshape(X, (964, 20, -1))
+  X = np.reshape(X, (-1, 11025))
+
+  pca = PCA(n_components=1000)
+  pca.fit_transform(X.T)
+  X = pca.components_.T
+
+  return X
