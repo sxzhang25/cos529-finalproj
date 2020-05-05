@@ -1,13 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
 import keras
 
 from mnist import MNIST
 
 import naive_nn as nnn
 import twin_nn as tnn
+import dbm
 from preprocessing import *
 # from oneshot import *
 
@@ -21,12 +20,16 @@ n_classes, n_examples, w, h = X.shape
 X_test, y_test, alphabet_dict_test, _ = load_imgs('./data/omniglot/images_evaluation')
 
 # tests
-tests = ['naive_nn', 'twin_nn']
+tests = ['preprocessing', 'dbm']
 pretrained = True
 
 
 for test in tests:
-  if test == 'naive_nn':
+  if test =='preprocessing':
+    X_train = preprocess_data_dbm(X)
+    np.savetxt('data/dbm_train.dat', X_train)
+
+  elif test == 'naive_nn':
     for i in range(2, 11):
       nnn.test_oneshot(i, 500, X_test, y_test, alphabet_dict_test, language=None, verbose=1)
 
@@ -49,3 +52,10 @@ for test in tests:
 
       for i in range(2, 11):
         tnn.test_oneshot(twin_nn, i, 500, X_test, y_test, alphabet_dict_test, language=None, verbose=1)
+
+  elif test == 'dbm':
+    # X_train = dbm.preprocess_data(X)
+    X_train = np.loadtxt('data/dbm_train.dat')
+    print(X_train.shape)
+    dbm_model = dbm.create_model(X_train.shape[0], 100, 200)
+    dbm.train(dbm_model, X_train)

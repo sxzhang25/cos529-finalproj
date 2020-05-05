@@ -53,8 +53,4 @@ def preprocess_data_dbm(X):
   X = np.reshape(X, (964, 20, -1))
   X = np.reshape(X, (-1, 11025))
 
-  pca = PCA(n_components=1000)
-  pca.fit_transform(X.T)
-  X = pca.components_.T
-
   return X
