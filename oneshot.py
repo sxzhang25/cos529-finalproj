@@ -30,3 +30,33 @@ def create_oneshot_task(X, labels, alphabet_dict, N=1, seed=2, language=None):
   pairs = [test_img, support_imgs]
 
   return pairs, targets
+
+def plot_oneshot_task(pairs):
+  test_img = pairs[0][1].reshape((105,105))
+  support_imgs = pairs[1]
+
+  fig = plt.figure(figsize=(15,3))
+  fig.add_subplot(1, 11, 1)
+  ax = plt.imshow(test_img)
+  ax.axes.get_xaxis().set_ticks([])
+  ax.axes.get_yaxis().set_ticks([])
+  plt.title('input image')
+  for i,support_img in enumerate(support_imgs):
+    ax = fig.add_subplot(1, 11, i+2)
+    plt.imshow(support_img.reshape((105,105)))
+    ax.axes.get_xaxis().set_ticks([])
+    ax.axes.get_yaxis().set_ticks([])
+    plt.title(i+1)
+  plt.show()
+
+def single_oneshot_task(N=10):
+  pairs, targets = create_oneshot_task(X, y, alphabet_dict, N=10)
+  naive_result = nnn.predict(pairs)
+  dbm_result = dbm.dbm_predict(dbm_model, pairs)
+  tnn_result = np.argmax(twin_nn.predict(pairs))
+  
+  plot_oneshot_task(pairs)
+  
+  print('Nearest neighbors prediction:       %d' % naive_result)
+  print('Deep Boltzmann Machine prediction:  %d' % dbm_result)
+  print('Twin neural network prediction:     %d' % tnn_result)
