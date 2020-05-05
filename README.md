@@ -8,6 +8,6 @@ TODO:
 
 (X) Create and test DBM model
 
-( ) Write organized testing code to compare model performances
+(X) Write organized testing code to compare model performances
 
-( ) Write code to generate figures
+(X) Write code to generate figures
