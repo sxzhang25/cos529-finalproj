@@ -49,8 +49,9 @@ def load_imgs(path, n=0):
   X = np.stack(X)
   return X, y, alphabet_dict, char_dict
 
-def preprocess_data_dbm(X):
-  X = np.reshape(X, (964, 20, -1))
-  X = np.reshape(X, (-1, 11025))
+def preprocess_data(X):
+  X = np.reshape(X, (X.shape[0], X.shape[1], -1))
+  print(X.shape)
+  X = np.reshape(X, (-1, X.shape[2]))
 
   return X
