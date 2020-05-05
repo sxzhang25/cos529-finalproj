@@ -21,7 +21,7 @@ n_classes, n_examples, w, h = X.shape
 X_test, y_test, alphabet_dict_test, _ = load_imgs('./data/omniglot/images_evaluation')
 
 # tests
-tests = ['preprocessing', 'dbm']
+tests = ['dbm']
 pretrained = True
 
 
@@ -55,11 +55,9 @@ for test in tests:
         tnn.test_oneshot(twin_nn, i, 500, X_test, y_test, alphabet_dict_test, language=None, verbose=1)
 
   elif test == 'dbm':
-    # X_train = np.loadtxt('data/dbm_train.dat')
-    # dbm_model = dbm.create_model(X_train.shape[0], 100, 200)
-    # dbm.train(dbm_model, X_train)
+    # X_test = preprocess_data(X_test)
 
-    with open('data/dbm_model.pickle', 'rb') as handle:
+    with open('models/dbm_model.pickle', 'rb') as handle:
       dbm_model = pickle.load(handle)
     for i in range(2, 11):
       dbm.test_oneshot(dbm_model, i, 500, X_test, y_test, alphabet_dict_test, language=None, verbose=1)
