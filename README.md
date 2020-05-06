@@ -12,4 +12,6 @@ TODO:
 
 (X) Write code to generate figures
 
-( ) Create and test simple and general one-shot tasks
+(X) Create and test simple and general one-shot tasks
+
+(X) Assess precision and recall for twin neural network
