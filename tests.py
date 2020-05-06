@@ -16,35 +16,41 @@ from preprocessing import *
 from oneshot import *
 
 
-def plot_oneshot_task(pairs):
+def plot_oneshot_task(pairs, N):
   test_img = pairs[0][1].reshape((105,105))
   support_imgs = pairs[1]
 
-  fig = plt.figure(figsize=(15,3))
-  fig.add_subplot(1, 11, 1)
-  ax = plt.imshow(test_img)
+  # set up axes
+  rows = int(np.floor(N**0.5))
+  cols = int(np.ceil(N / rows))
+  fig, axs = plt.subplots(rows, cols + 1, figsize=(5 * (cols + 1), 5 * rows))
+  [ax.set_axis_off() for ax in axs.ravel()]
+
+  # plot target image
+  ax = axs[0,0] if rows > 1 else axs[0]
+  ax.imshow(test_img)
   ax.axes.get_xaxis().set_ticks([])
   ax.axes.get_yaxis().set_ticks([])
-  plt.title('input image')
+  ax.set_title('target image')
+
+  # plot candidate images
   for i,support_img in enumerate(support_imgs):
-    ax = fig.add_subplot(1, 11, i+2)
-    plt.imshow(support_img.reshape((105,105)))
-    ax.axes.get_xaxis().set_ticks([])
-    ax.axes.get_yaxis().set_ticks([])
-    plt.title(i+1)
+    ax = axs[i // cols, i % cols + 1] if rows > 1 else axs[i+1]
+    ax.imshow(support_img.reshape((105,105)))
+    ax.set_title(i+1)
   plt.show()
 
-def single_oneshot_task(X, y, N=10):
-  pairs, targets = create_oneshot_task(X, y, alphabet_dict, N=10)
+def single_oneshot_task(X, y, alphabet_dict, N=10, task_type='simple'):
+  pairs, targets, M = create_oneshot_task(X, y, alphabet_dict, N=N, task_type=task_type)
   naive_result = nnn.predict(pairs)
   dbm_result = dbm.dbm_predict(dbm_model, pairs)
-  tnn_result = np.argmax(twin_nn.predict(pairs))
+  tnn_result = np.where((twin_nn.predict(pairs)>0.5))[0] + 1
 
-  plot_oneshot_task(pairs)
+  plot_oneshot_task(pairs, N)
 
   print('Nearest neighbors prediction:       %d' % (naive_result+1))
   print('Deep Boltzmann Machine prediction:  %d' % (dbm_result+1))
-  print('Twin neural network prediction:     %d' % (tnn_result+1))
+  print('Twin neural network prediction:    ', tnn_result)
 
   return pairs
 
@@ -134,8 +140,29 @@ n_classes, n_examples, w, h = X.shape
 X_test, y_test, alphabet_dict_test, _ = load_imgs('./data/omniglot/images_evaluation')
 
 # tests
-tests = ['all']
+tests = ['tnn_general']
 pretrained = True
+
+# load models
+if not pretrained:
+  twin_nn = tnn.create_model((w,h,1))
+  twin_nn.compile(loss='binary_crossentropy',
+                  optimizer='adam',
+                  metrics=['binary_accuracy'])
+
+  twin_nn.summary()
+
+  batch_size = 32
+  history = twin_nn.fit_generator(generator=tnn.training_generator(X, batch_size=batch_size),
+                                  steps_per_epoch=(X.shape[0] * X.shape[1] / batch_size),
+                                  epochs=30)
+
+  twin_nn.save('models/twin_nn')
+else:
+  twin_nn = keras.models.load_model('models/twin_nn')
+
+with open('models/dbm_model.pickle', 'rb') as handle:
+  dbm_model = pickle.load(handle)
 
 for test in tests:
   if test =='preprocessing':
@@ -144,44 +171,44 @@ for test in tests:
 
   elif test == 'naive_nn':
     for i in range(2, 11):
-      nnn.test_oneshot(i, 500, X_test, y_test, alphabet_dict_test, language=None, verbose=1)
+      nnn.test_oneshot(i, 500, X_test, y_test, alphabet_dict_test,
+                       language=None, verbose=1)
 
-  elif test == 'twin_nn':
-    if not pretrained:
-      twin_nn = tnn.create_model((w,h,1))
-      twin_nn.compile(loss='binary_crossentropy',
-                      optimizer='adam',
-                      metrics=['binary_accuracy'])
+  elif test == 'tnn_simple':
+    for i in range(2, 11):
+      tnn.test_oneshot(twin_nn, i, 500, X_test, y_test, alphabet_dict_test,
+                       language=None, verbose=1)
 
-      twin_nn.summary()
+  elif test == 'tnn_general':
+    accs = []
+    prs = []
+    rcs = []
+    for i in range(2, 21):
+      acc, pr, rc = tnn.test_oneshot(twin_nn, i, 500, X_test, y_test, alphabet_dict_test,
+                                     language=None, task_type='general', verbose=1)
+      accs.append(acc)
+      prs.append(pr)
+      rcs.append(rc)
 
-      batch_size = 32
-      history = twin_nn.fit_generator(generator=tnn.training_generator(X, batch_size=batch_size),
-                                      steps_per_epoch=(X.shape[0] * X.shape[1] / batch_size),
-                                      epochs=30)
-      twin_nn.save('models/twin_nn')
-    else:
-      twin_nn = keras.models.load_model('models/twin_nn')
-
-      for i in range(2, 11):
-        tnn.test_oneshot(twin_nn, i, 500, X_test, y_test, alphabet_dict_test, language=None, verbose=1)
+    y = np.arange(2, 21)
+    fig = plt.figure(figsize=(8,6))
+    ax = fig.add_subplot(111)
+    ax.plot(y, accs, label='accuracy', c='green')
+    ax.plot(y, prs, label='precision', c='red')
+    ax.plot(y, rcs, label='recall', c='blue')
+    plt.xlabel('N')
+    plt.ylabel('%')
+    plt.title('Precision, recall, accuracy of twin neural network')
+    plt.legend()
+    plt.show()
 
   elif test == 'dbm':
     # X_test = preprocess_data(X_test)
-
-    with open('models/dbm_model.pickle', 'rb') as handle:
-      dbm_model = pickle.load(handle)
-
     for i in range(2, 11):
-      dbm.test_oneshot(dbm_model, i, 500, X_test, y_test, alphabet_dict_test, language=None, verbose=1)
+      dbm.test_oneshot(dbm_model, i, 500, X_test, y_test, alphabet_dict_test,
+                       language=None, verbose=1)
 
   elif test == 'all':
-    # load models
-    twin_nn = keras.models.load_model('models/twin_nn')
-
-    with open('models/dbm_model.pickle', 'rb') as handle:
-      dbm_model = pickle.load(handle)
-
     # accuracies over N-way learning
     naive_accs = []
     twin_accs = []
