@@ -170,7 +170,7 @@ def test_oneshot(model, N, k, data, labels, alphabet_dict, language=None, verbos
     print("Evaluating model on {} random {}-way one-shot learning tasks...".format(k,N))
 
   for i in range(k):
-    inputs, targets = create_oneshot_task(data, labels, alphabet_dict, N=N, language=language)
+    inputs, targets, M = create_oneshot_task(data, labels, alphabet_dict, N=N, language=language)
     y = dbm_predict(model, inputs)
     if y == np.argmax(targets):
       correct += 1

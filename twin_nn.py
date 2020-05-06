@@ -88,7 +88,8 @@ def create_model(input_shape):
 
   return twin_nn
 
-def test_oneshot(model, N, k, data, labels, alphabet_dict, language=None, verbose=0):
+def test_oneshot(model, N, k, data, labels, alphabet_dict, 
+                 language=None, task_type='simple', verbose=0):
   '''
   Test average N-way oneshot learning accuracy of model over k one-shot tasks
   '''
@@ -96,14 +97,22 @@ def test_oneshot(model, N, k, data, labels, alphabet_dict, language=None, verbos
   if verbose:
     print("Evaluating model on {} random {}-way one-shot learning tasks...".format(k,N))
 
+  tp = 0
+  fp = 0
+  p = 0
   for i in range(k):
-    inputs, targets = create_oneshot_task(data, labels, alphabet_dict, N=N, language=language)
-    probs = model.predict(inputs)
-    if np.argmax(probs) == np.argmax(targets):
-      correct += 1
+    inputs, targets, M = create_oneshot_task(data, labels, alphabet_dict, 
+                                             N=N, language=language, task_type=task_type)
+    probs = np.round(model.predict(inputs)).reshape(-1)
+    tp += len(np.where((probs*targets==1))[0])
+    fp += len(np.where((probs==1))[0]) - len(np.where((probs*targets==1))[0])
+    correct += len(np.where((probs==targets))[0])
+    p += M
 
-  accuracy = (100 * correct / k)
+  accuracy = (100 * correct / (k * N))
+  precision = 100 * tp / (tp + fp)
+  recall = 100 * tp / p
   if verbose:
-    print("Average %d-way one-shot accuracy: %4.2f%%" % (N, accuracy))
+    print("Average %d-way one-shot accuracy: %3.2f%%  Precision / Recall: %3.2f%% / %3.2f%%" % (N, accuracy, precision, recall))
 
-  return accuracy
+  return accuracy, precision, recall

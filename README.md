@@ -11,3 +11,5 @@ TODO:
 (X) Write organized testing code to compare model performances
 
 (X) Write code to generate figures
+
+( ) Create and test simple and general one-shot tasks

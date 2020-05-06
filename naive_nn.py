@@ -25,7 +25,7 @@ def test_oneshot(N, k, data, labels, alphabet_dict, language=None, verbose=0):
     print("Evaluating model on {} random {}-way one-shot learning tasks...".format(k,N))
 
   for i in range(k):
-    inputs, targets = create_oneshot_task(data, labels, alphabet_dict, N=N, language=language)
+    inputs, targets, M = create_oneshot_task(data, labels, alphabet_dict, N=N, language=language)
     y = predict(inputs)
     if y == np.argmax(targets):
       correct += 1
