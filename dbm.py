@@ -1,3 +1,9 @@
+###
+# Code reference:
+# * https://github.com/clairett/DeepLearning/blob/master/DBM.py
+# * http://proceedings.mlr.press/v5/salakhutdinov09a/salakhutdinov09a.pdf
+###
+
 import numpy as np
 import sys
 
