@@ -201,6 +201,45 @@ for test in tests:
     for i in range(2, 11):
       dbm.test_oneshot(dbm_model, i, 500, X_test, y_test, alphabet_dict_test, 
                        language=None, verbose=1)
+    
+  elif test == 'mnist':
+    # load data
+    X_test_mnist, y_test_mnist, alphabet_dict_test_mnist, _ = load_mnist('data/mnist')
+    
+    # accuracies over N-way learning
+    naive_accs = []
+    twin_accs = []
+    dbm_accs = []
+
+    print('\n------NAIVE NEAREST NEIGHBORS------')
+    for i in range(2, 11):
+      naive_acc = nnn.test_oneshot(i, 500, X_test_mnist, y_test_mnist, alphabet_dict_test_mnist, 
+                                   language=None, verbose=1)
+      naive_accs.append(naive_acc)
+    
+    print('\n------DEEP BOLTZMANN MACHINE------')
+    for i in range(2, 11):
+      dbm_acc = dbm.test_oneshot(dbm_model, i, 500, X_test_mnist, y_test_mnist, alphabet_dict_test_mnist, 
+                                 language=None, verbose=1)
+      dbm_accs.append(dbm_acc)
+    
+    print('\n------TWIN NEURAL NETWORK------')
+    for i in range(2, 11):
+      twin_acc, _, _ = tnn.test_oneshot(twin_nn, i, 500, X_test_mnist, y_test_mnist, alphabet_dict_test_mnist, 
+                                  language=None, verbose=1)
+      twin_accs.append(twin_acc)
+        
+    y = np.arange(2, 11)
+    fig = plt.figure(figsize=(8,6))
+    ax = fig.add_subplot(111)
+    ax.plot(y, naive_accs, label='nearest neighbors')
+    ax.plot(y, dbm_accs, label='deep boltzmann machine')
+    ax.plot(y, twin_accs, label='twin neural network')
+    plt.xlabel('N')
+    plt.ylabel('Accuracy')
+    plt.title('N-way one-shot recognition task accuracies')
+    plt.legend()
+    plt.show()
 
   elif test == 'all':    
     # accuracies over N-way learning
