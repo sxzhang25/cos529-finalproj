@@ -12,6 +12,8 @@ TODO:
 
 (X) Write code to generate figures
 
+( ) Analyze filters in first convolutional layer
+
 (X) Create and test simple and general one-shot tasks
 
 (X) Assess precision and recall for twin neural network
