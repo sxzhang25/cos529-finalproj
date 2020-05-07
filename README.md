@@ -17,3 +17,5 @@ TODO:
 (X) Create and test simple and general one-shot tasks
 
 (X) Assess precision and recall for twin neural network
+
+(X) Write testing for MNIST dataset
