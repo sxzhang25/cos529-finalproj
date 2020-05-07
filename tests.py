@@ -136,11 +136,17 @@ np.random.seed(0) # set seed
 X, y, alphabet_dict, char_dict = load_imgs('./data/omniglot/images_background')
 n_classes, n_examples, w, h = X.shape
 
+X_train = preprocess_data(X)
+
 # load test data
 X_test, y_test, alphabet_dict_test, _ = load_imgs('./data/omniglot/images_evaluation')
 
 # tests
 tests = ['tnn_general']
+pretrained = True
+
+# tests
+tests = ['tnn_general', 'all']
 pretrained = True
 
 # load models
@@ -149,18 +155,18 @@ if not pretrained:
   twin_nn.compile(loss='binary_crossentropy',
                   optimizer='adam',
                   metrics=['binary_accuracy'])
-
+  
   twin_nn.summary()
-
+  
   batch_size = 32
   history = twin_nn.fit_generator(generator=tnn.training_generator(X, batch_size=batch_size),
-                                  steps_per_epoch=(X.shape[0] * X.shape[1] / batch_size),
+                                  steps_per_epoch=(X.shape[0] * X.shape[1] / batch_size), 
                                   epochs=30)
-
+  
   twin_nn.save('models/twin_nn')
 else:
   twin_nn = keras.models.load_model('models/twin_nn')
-
+  
 with open('models/dbm_model.pickle', 'rb') as handle:
   dbm_model = pickle.load(handle)
 
@@ -171,44 +177,32 @@ for test in tests:
 
   elif test == 'naive_nn':
     for i in range(2, 11):
-      nnn.test_oneshot(i, 500, X_test, y_test, alphabet_dict_test,
+      nnn.test_oneshot(i, 500, X_test, y_test, alphabet_dict_test, 
                        language=None, verbose=1)
 
   elif test == 'tnn_simple':
     for i in range(2, 11):
-      tnn.test_oneshot(twin_nn, i, 500, X_test, y_test, alphabet_dict_test,
+      tnn.test_oneshot(twin_nn, i, 500, X_test, y_test, alphabet_dict_test, 
                        language=None, verbose=1)
-
+  
   elif test == 'tnn_general':
     accs = []
     prs = []
     rcs = []
     for i in range(2, 21):
-      acc, pr, rc = tnn.test_oneshot(twin_nn, i, 500, X_test, y_test, alphabet_dict_test,
+      acc, pr, rc = tnn.test_oneshot(twin_nn, i, 500, X_test, y_test, alphabet_dict_test, 
                                      language=None, task_type='general', verbose=1)
       accs.append(acc)
       prs.append(pr)
       rcs.append(rc)
-
-    y = np.arange(2, 21)
-    fig = plt.figure(figsize=(8,6))
-    ax = fig.add_subplot(111)
-    ax.plot(y, accs, label='accuracy', c='green')
-    ax.plot(y, prs, label='precision', c='red')
-    ax.plot(y, rcs, label='recall', c='blue')
-    plt.xlabel('N')
-    plt.ylabel('%')
-    plt.title('Precision, recall, accuracy of twin neural network')
-    plt.legend()
-    plt.show()
-
+        
   elif test == 'dbm':
-    # X_test = preprocess_data(X_test)
+    # X_test = preprocess_data(X_test)      
     for i in range(2, 11):
-      dbm.test_oneshot(dbm_model, i, 500, X_test, y_test, alphabet_dict_test,
+      dbm.test_oneshot(dbm_model, i, 500, X_test, y_test, alphabet_dict_test, 
                        language=None, verbose=1)
 
-  elif test == 'all':
+  elif test == 'all':    
     # accuracies over N-way learning
     naive_accs = []
     twin_accs = []
@@ -216,19 +210,19 @@ for test in tests:
 
     print('\n------NAIVE NEAREST NEIGHBORS------')
     for i in range(2, 21):
-      naive_acc = nnn.test_oneshot(i, 500, X_test, y_test, alphabet_dict_test,
+      naive_acc = nnn.test_oneshot(i, 500, X_test, y_test, alphabet_dict_test, 
                                    language=None, verbose=1)
       naive_accs.append(naive_acc)
-
+    
     print('\n------DEEP BOLTZMANN MACHINE------')
     for i in range(2, 21):
-      dbm_acc = dbm.test_oneshot(dbm_model, i, 500, X_test, y_test, alphabet_dict_test,
+      dbm_acc = dbm.test_oneshot(dbm_model, i, 500, X_test, y_test, alphabet_dict_test, 
                                  language=None, verbose=1)
       dbm_accs.append(dbm_acc)
-
+    
     print('\n------TWIN NEURAL NETWORK------')
     for i in range(2, 21):
-      twin_acc = tnn.test_oneshot(twin_nn, i, 500, X_test, y_test, alphabet_dict_test,
+      twin_acc, _, _ = tnn.test_oneshot(twin_nn, i, 500, X_test, y_test, alphabet_dict_test, 
                                   language=None, verbose=1)
       twin_accs.append(twin_acc)
 

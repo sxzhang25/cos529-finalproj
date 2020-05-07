@@ -71,7 +71,7 @@ def mean_field_update(X, model, delta):
   b_w, b_j = model['b_w'], model['b_j']
   mu1 = np.random.rand(J.shape[0], X.shape[1])
   mu2 = np.random.rand(J.shape[1], X.shape[1])
-  for i in range(10):
+  for i in range(delta):
     mu1_ = sigmoid(W.T @ X + J @ mu2 + np.array([b_w,] * X.shape[1]).T)
     mu2_ = sigmoid(J.T @ mu1 + np.array([b_j,] * X.shape[1]).T)
 
@@ -136,7 +136,7 @@ def train(model, X_train, n_epochs=10, K=100, batch_size=32, mf_delta=1, gibbs_s
       sys.stdout.flush()
 
     # update learning rate
-    lr *= 0.5
+    lr *= 0.9
 
   return train_error, model
 
